@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib import animation
 from itertools import combinations
+import collections
 t = 0.
 class Particle:
     """A class representing a two-dimensional particle."""
@@ -163,10 +164,10 @@ class Simulation:
         t2 = p2.record_t(0.01)
         vel1 = np.sqrt(p1.v[0]**2+p1.v[1]**2)
         vel2 = np.sqrt(p2.v[0]**2+p2.v[1]**2)
-        print ("time 1 is ", t1)
-        print ("time 2 is ", t2)
-        print ("vel 1 is ", vel1)
-        print ("vel 2 is ", vel2)
+#        print ("time 1 is ", t1)
+#        print ("time 2 is ", t2)
+#        print ("vel 1 is ", vel1)
+#        print ("vel 2 is ", vel2)
         return (vel1, vel2, t1, t2) 
 
     def handle_collisions(self):
@@ -183,12 +184,14 @@ class Simulation:
 
         part1 = []
         part2 = []
+        d = collections.defaultdict(list)
         pairs = combinations(range(self.n), 2)
         for i,j in pairs:
             if self.particles[i].overlaps(self.particles[j]):
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
-                vt1 = [v1, t1]
-                vt2 = [v2, t2]
+                vt1 = [v1, t1, i]
+                vt2 = [v2, t2, j]
+                print (vt1)
                 return [vt1, vt2]
    
 #                print ("particle position for ", i, " is ", np.sqrt((self.particles[i].r[0])**2 + (self.particles[i].r[1])**2))
