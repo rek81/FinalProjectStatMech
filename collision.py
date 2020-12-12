@@ -83,6 +83,10 @@ class Simulation:
     """
 
     ParticleClass = Particle
+    particle1MasterList = {}
+    particle2MasterList = {}
+
+
 
     def __init__(self, n, radius=0.01, styles=None):
         """Initialize the simulation with n Particles with radii radius.
@@ -97,6 +101,9 @@ class Simulation:
 
         self.init_particles(n, radius, styles)
         self.dt = 0.01
+        for c in range(n):
+            particle1MasterList[c]=[]
+            particle2MasterList[c]=[]
 
     def place_particle(self, rad, styles):
         # Choose x, y so that the Particle is entirely inside the
@@ -164,10 +171,6 @@ class Simulation:
         t2 = p2.record_t(0.01)
         vel1 = np.sqrt(p1.v[0]**2+p1.v[1]**2)
         vel2 = np.sqrt(p2.v[0]**2+p2.v[1]**2)
-#        print ("time 1 is ", t1)
-#        print ("time 2 is ", t2)
-#        print ("vel 1 is ", vel1)
-#        print ("vel 2 is ", vel2)
         return (vel1, vel2, t1, t2) 
 
     def handle_collisions(self):
@@ -181,22 +184,30 @@ class Simulation:
         # We're going to need a sequence of all of the pairs of particles when
         # we are detecting collisions. combinations generates pairs of indexes
         # into the self.particles list of Particles on the fly.
-
         part1 = []
         part2 = []
         d = collections.defaultdict(list)
         pairs = combinations(range(self.n), 2)
+        vt1 = []
+        vt2 = []
         for i,j in pairs:
             if self.particles[i].overlaps(self.particles[j]):
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
-                vt1 = [v1, t1, i]
-                vt2 = [v2, t2, j]
-                print (vt1)
-                return [vt1, vt2]
-   
-#                print ("particle position for ", i, " is ", np.sqrt((self.particles[i].r[0])**2 + (self.particles[i].r[1])**2))
-#                print ("particle 2 position for ", j, " is ", np.sqrt((self.particles[j].r[0])**2 + (self.particles[j].r[1])**2))
+                vt1 = [v1, t1]
+                vt2 = [v2, t2]
 
+                particle1MasterList[i].append(vt1)
+                particle2MasterList[j].append(vt2)
+                
+                
+                if t1 == 100.:
+                    break
+#        return [particle1Master]
+  
+        # for n in len(list of n particles)
+        #    if i == i:
+        #        (v[after first hit] - v[after this hit]) * (t[after hist hit] - t[after second hit])
+         
 
     def handle_boundary_collisions(self, p):
         """Bounce the particles off the walls elastically."""
