@@ -8,6 +8,8 @@ t = 0.
 L = [1]
 particle1MasterList = {}
 particle2MasterList = {}
+collisioncount = 0
+
 class Particle:
     """A class representing a two-dimensional particle."""
 
@@ -87,7 +89,7 @@ class Simulation:
 
     ParticleClass = Particle
 
-
+    
 
     def __init__(self, n, radius=0.01, styles=None):
         """Initialize the simulation with n Particles with radii radius.
@@ -111,7 +113,8 @@ class Simulation:
         x, y = rad + (1 - 2*rad) * np.random.random(2)
         # Choose a random velocity (within some reasonable range of
         # values) for the Particle.
-        vr = 0.1 * np.sqrt(np.random.random()) + 0.05
+#        vr = 0.1 * np.sqrt(np.random.random()) + 0.05
+        vr = 0.1 * np.sqrt(np.random.random()) + 3.
         vphi = 2*np.pi * np.random.random()
         vx, vy = vr * np.cos(vphi), vr * np.sin(vphi)
         particle = self.ParticleClass(x, y, vx, vy, rad, styles)
@@ -190,37 +193,28 @@ class Simulation:
         pairs = combinations(range(self.n), 2)
         vt1 = []
         vt2 = []
+        global collisioncount
         for i,j in pairs:
             if self.particles[i].overlaps(self.particles[j]):
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
-                vt1 = [v1, t1]
-                vt2 = [v2, t2]
-                particle1MasterList[i].append(vt1)
-                particle2MasterList[j].append(vt2)
-
-                
-        if len(particle1MasterList[i]) > 2.:
-            continue
-        if len(particle2MasterList[i]) > 2.:
-            continue
-                
-        return particle1MasterList
-
-    def KnNumber(self, particle1MasterList):
-        
-        MFPlist = []
-        for i in particle1MasterList.keys():
-            for v in range(1, len(particle1MasterList[i])):
-                print(particle1MasterList[i]) 
-                MFP = (particle1MasterList[i][v][0]-particle1MasterList[v-1][0]) * (particle1MasterList[v][1] - particle1MasterList[v-1][1])
-                MFPlist.append(MFP)
-        Kn = mean_free_path/L[0]
-        return Kn
-
-    def getKn(self):
-        KnVal = KnNumber(handle_collisions(self))
-        print (KnVal)
+                if len(particle1MasterList[i]) <= 2.:
             
+#                if len(particle1MasterList([i]) <= 10:
+                    vt1 = [v1, t1]
+                    particle1MasterList[i].append(vt1)
+                    collisioncount += 1
+                if collisioncount == 100:
+                
+                    MFPlist = []
+                    for i in particle1MasterList.keys():
+                        for v in range(1, len(particle1MasterList[i])):
+                            MFP = abs((particle1MasterList[i][v][0]-particle1MasterList[i][v-1][0])) * (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
+                            MFPlist.append(MFP)
+                    mean_free_path = sum(MFPlist)
+#                    print ("this is mean free path ",mean_free_path) 
+                    Kn = mean_free_path/L[0]
+#                    print ("this is kn ",Kn)
+#                    return Kn
 
         
     def handle_boundary_collisions(self, p):
