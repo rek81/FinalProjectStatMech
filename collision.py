@@ -5,6 +5,9 @@ from matplotlib import animation
 from itertools import combinations
 import collections
 t = 0.
+L = [1]
+particle1MasterList = {}
+particle2MasterList = {}
 class Particle:
     """A class representing a two-dimensional particle."""
 
@@ -83,8 +86,6 @@ class Simulation:
     """
 
     ParticleClass = Particle
-    particle1MasterList = {}
-    particle2MasterList = {}
 
 
 
@@ -98,7 +99,6 @@ class Simulation:
         the Particles.
 
         """
-
         self.init_particles(n, radius, styles)
         self.dt = 0.01
         for c in range(n):
@@ -195,20 +195,34 @@ class Simulation:
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
                 vt1 = [v1, t1]
                 vt2 = [v2, t2]
-
                 particle1MasterList[i].append(vt1)
                 particle2MasterList[j].append(vt2)
+#                print (particle1MasterList)
                 
-                
-                if t1 == 100.:
-                    break
-#        return [particle1Master]
-  
-        # for n in len(list of n particles)
-        #    if i == i:
-        #        (v[after first hit] - v[after this hit]) * (t[after hist hit] - t[after second hit])
-         
+                if len(particle1MasterList[i]) > 2.:
+                    continue
+                if len(particle2MasterList[i]) > 2.:
+                    continue
 
+        return particle1MasterList
+
+    def KnNumber(self, particle1MasterList):
+        
+        MFPlist = []
+        for i in particle1MasterList.keys():
+            print(particle1MasterList[i])
+            MFP = (particle1MasterList[i][0]-particle1MasterList[i-1][0]) * (particle1MasterList[i][1] - particle1MasterList[i-1][1])
+            MFPlist.append(MFP)
+            Kn = mean_free_path/L[0]
+            return Kn
+#            print ("mean free path is ", mean_free_path)
+#            print ("Kn is  ", Kn)
+
+    KnVal = KnNumber(handle_collisions())
+    print (KnVal)
+            
+
+        
     def handle_boundary_collisions(self, p):
         """Bounce the particles off the walls elastically."""
 
@@ -302,3 +316,4 @@ if __name__ == '__main__':
     styles = {'edgecolor': 'C0', 'linewidth': 2, 'fill': None}
     sim = Simulation(nparticles, radii, styles)
     sim.do_animation(save=False)
+
