@@ -197,29 +197,29 @@ class Simulation:
                 vt2 = [v2, t2]
                 particle1MasterList[i].append(vt1)
                 particle2MasterList[j].append(vt2)
-#                print (particle1MasterList)
-                
-                if len(particle1MasterList[i]) > 2.:
-                    continue
-                if len(particle2MasterList[i]) > 2.:
-                    continue
 
+                
+        if len(particle1MasterList[i]) > 2.:
+            continue
+        if len(particle2MasterList[i]) > 2.:
+            continue
+                
         return particle1MasterList
 
     def KnNumber(self, particle1MasterList):
         
         MFPlist = []
         for i in particle1MasterList.keys():
-            print(particle1MasterList[i])
-            MFP = (particle1MasterList[i][0]-particle1MasterList[i-1][0]) * (particle1MasterList[i][1] - particle1MasterList[i-1][1])
-            MFPlist.append(MFP)
-            Kn = mean_free_path/L[0]
-            return Kn
-#            print ("mean free path is ", mean_free_path)
-#            print ("Kn is  ", Kn)
+            for v in range(1, len(particle1MasterList[i])):
+                print(particle1MasterList[i]) 
+                MFP = (particle1MasterList[i][v][0]-particle1MasterList[v-1][0]) * (particle1MasterList[v][1] - particle1MasterList[v-1][1])
+                MFPlist.append(MFP)
+        Kn = mean_free_path/L[0]
+        return Kn
 
-    KnVal = KnNumber(handle_collisions())
-    print (KnVal)
+    def getKn(self):
+        KnVal = KnNumber(handle_collisions(self))
+        print (KnVal)
             
 
         
