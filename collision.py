@@ -5,7 +5,7 @@ from matplotlib import animation
 from itertools import combinations
 import collections
 t = 0.
-L = [1]
+L = .1/2.
 particle1MasterList = {}
 particle2MasterList = {}
 collisioncount = 0
@@ -13,7 +13,7 @@ collisioncount = 0
 class Particle:
     """A class representing a two-dimensional particle."""
 
-    def __init__(self, x, y, vx, vy, radius=0.01, styles=None):
+    def __init__(self, x, y, vx, vy, radius=0.001, styles=None):
         """Initialize the particle's position, velocity, and radius.
 
         Any key-value pairs passed in the styles dictionary will be passed
@@ -29,7 +29,7 @@ class Particle:
         self.styles = styles
         if not self.styles:
             # Default circle styles
-            self.styles = {'edgecolor': 'b', 'fill': False}
+            self.styles = {'edgecolor': 'b', 'fill': True}
 
     # For convenience, map the components of the particle's position and
     # velocity vector onto the attributes x, y, vx and vy.
@@ -110,11 +110,11 @@ class Simulation:
     def place_particle(self, rad, styles):
         # Choose x, y so that the Particle is entirely inside the
         # domain of the simulation.
-        x, y = rad + (1 - 2*rad) * np.random.random(2)
+        x, y = rad + (L - 2*rad) * np.random.random(2)
         # Choose a random velocity (within some reasonable range of
         # values) for the Particle.
 #        vr = 0.1 * np.sqrt(np.random.random()) + 0.05
-        vr = 0.1 * np.sqrt(np.random.random()) + 3.
+        vr = 0.1 * np.sqrt(np.random.random()) + 10.
         vphi = 2*np.pi * np.random.random()
         vx, vy = vr * np.cos(vphi), vr * np.sin(vphi)
         particle = self.ParticleClass(x, y, vx, vy, rad, styles)
@@ -187,9 +187,8 @@ class Simulation:
         # We're going to need a sequence of all of the pairs of particles when
         # we are detecting collisions. combinations generates pairs of indexes
         # into the self.particles list of Particles on the fly.
-        part1 = []
-        part2 = []
-        d = collections.defaultdict(list)
+#        d = collections.defaultdict(list)
+#        print (d)
         pairs = combinations(range(self.n), 2)
         vt1 = []
         vt2 = []
@@ -197,25 +196,25 @@ class Simulation:
         for i,j in pairs:
             if self.particles[i].overlaps(self.particles[j]):
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
-                if len(particle1MasterList[i]) <= 2.:
-            
-#                if len(particle1MasterList([i]) <= 10:
+                if len(particle1MasterList[i]) <= 10.:
+#                    print (particle1MasterList)
+                    
                     vt1 = [v1, t1]
                     particle1MasterList[i].append(vt1)
                     collisioncount += 1
-                if collisioncount == 100:
-                
-                    MFPlist = []
-                    for i in particle1MasterList.keys():
-                        for v in range(1, len(particle1MasterList[i])):
-                            MFP = abs((particle1MasterList[i][v][0]-particle1MasterList[i][v-1][0])) * (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
-                            MFPlist.append(MFP)
-                    mean_free_path = sum(MFPlist)
-#                    print ("this is mean free path ",mean_free_path) 
-                    Kn = mean_free_path/L[0]
-#                    print ("this is kn ",Kn)
-#                    return Kn
-
+                    if collisioncount < 2001:
+                        print (collisioncount)
+                    if collisioncount == 2000:
+                        
+                        MFPlist = []
+                        for i in particle1MasterList.keys():
+                            for v in range(1, len(particle1MasterList[i])):
+                                MFP = abs((particle1MasterList[i][v][0]-particle1MasterList[i][v-1][0])) * (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
+                                MFPlist.append(MFP)
+                        mean_free_path = sum(MFPlist)/len(MFPlist)
+                        Kn = mean_free_path/L
+                        print ("this is kn ",Kn)
+                                
         
     def handle_boundary_collisions(self, p):
         """Bounce the particles off the walls elastically."""
@@ -223,14 +222,14 @@ class Simulation:
         if p.x - p.radius < 0:
             p.x = p.radius
             p.vx = -p.vx
-        if p.x + p.radius > 1:
-            p.x = 1-p.radius
+        if p.x + p.radius > L:
+            p.x = L-p.radius
             p.vx = -p.vx
         if p.y - p.radius < 0:
             p.y = p.radius
             p.vy = -p.vy
-        if p.y + p.radius > 1:
-            p.y = 1-p.radius
+        if p.y + p.radius > L:
+            p.y = L-p.radius
             p.vy = -p.vy
 
     def apply_forces(self):
@@ -278,9 +277,10 @@ class Simulation:
         for s in ['top','bottom','left','right']:
             self.ax.spines[s].set_linewidth(2)
         self.ax.set_aspect('equal', 'box')
-        self.ax.set_xlim(0, 1)
-        self.ax.set_ylim(0, 1)
+        self.ax.set_xlim(0, L)
+        self.ax.set_ylim(0, L)
         self.ax.xaxis.set_ticks([])
+        self.ax.set_xlabel(str(L)+' (units of distance)')
         self.ax.yaxis.set_ticks([])
 
     def save_or_show_animation(self, anim, save, filename='collision.mp4'):
@@ -304,10 +304,11 @@ class Simulation:
 
 
 if __name__ == '__main__':
-    nparticles = 50
+    nparticles = 200
 #    radii = np.random.random(nparticles)*0.03+0.02
-    radii = np.random.random(nparticles)*0.03+0.01
-    styles = {'edgecolor': 'C0', 'linewidth': 2, 'fill': None}
+#    radii = np.random.uniform(0.00085, 0.00095, nparticles)
+    radii = np.random.uniform(0.000085, 0.000095, nparticles)
+    styles = {'edgecolor': 'C0', 'linewidth': 2, 'fill': True}
     sim = Simulation(nparticles, radii, styles)
     sim.do_animation(save=False)
 
