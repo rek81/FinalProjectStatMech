@@ -5,7 +5,7 @@ from matplotlib import animation
 from itertools import combinations
 import collections
 t = 0.
-L = .1/2.
+L = .01
 particle1MasterList = {}
 particle2MasterList = {}
 collisioncount = 0
@@ -114,7 +114,7 @@ class Simulation:
         # Choose a random velocity (within some reasonable range of
         # values) for the Particle.
 #        vr = 0.1 * np.sqrt(np.random.random()) + 0.05
-        vr = 0.1 * np.sqrt(np.random.random()) + 10.
+        vr = 0.1 * np.sqrt(np.random.uniform(0.05, 0.055)) + .1
         vphi = 2*np.pi * np.random.random()
         vx, vy = vr * np.cos(vphi), vr * np.sin(vphi)
         particle = self.ParticleClass(x, y, vx, vy, rad, styles)
@@ -196,24 +196,34 @@ class Simulation:
         for i,j in pairs:
             if self.particles[i].overlaps(self.particles[j]):
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
-                if len(particle1MasterList[i]) <= 10.:
-#                    print (particle1MasterList)
-                    
+                if len(particle1MasterList[i]) <= 5.:
+
                     vt1 = [v1, t1]
                     particle1MasterList[i].append(vt1)
+
                     collisioncount += 1
-                    if collisioncount < 2001:
-                        print (collisioncount)
-                    if collisioncount == 2000:
+                    if collisioncount < (nparticles*5)+1:
                         
-                        MFPlist = []
+                        print (collisioncount)
+                    if collisioncount == 5*nparticles:
+                        partlist = []
+
                         for i in particle1MasterList.keys():
+                            tlist = []
+                            vlist = []
                             for v in range(1, len(particle1MasterList[i])):
-                                MFP = abs((particle1MasterList[i][v][0]-particle1MasterList[i][v-1][0])) * (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
-                                MFPlist.append(MFP)
-                        mean_free_path = sum(MFPlist)/len(MFPlist)
-                        Kn = mean_free_path/L
-                        print ("this is kn ",Kn)
+                                vel = abs(particle1MasterList[i][v][0]-particle1MasterList[i][v-1][0])
+                                time = (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
+                                vlist.append(vel)
+                                tlist.append(time)
+                                
+                                avgT = sum(tlist)/len(tlist)
+                                avgV = sum(vlist)/len(vlist)
+                                vt = avgT*avgV
+                                partlist.append(vt)
+                        mean_free_path = (sum(partlist)/len(partlist))/2.
+                        Tmfp = 1./(np.pi*(nparticles/(0.01**2)))
+                        print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", Tmfp/0.0005)
                                 
         
     def handle_boundary_collisions(self, p):
@@ -304,10 +314,12 @@ class Simulation:
 
 
 if __name__ == '__main__':
-    nparticles = 200
+    nparticles = 1500
 #    radii = np.random.random(nparticles)*0.03+0.02
 #    radii = np.random.uniform(0.00085, 0.00095, nparticles)
     radii = np.random.uniform(0.000085, 0.000095, nparticles)
+#    radii = np.empty(nparticles)  
+#    radii.fill(0.00009)
     styles = {'edgecolor': 'C0', 'linewidth': 2, 'fill': True}
     sim = Simulation(nparticles, radii, styles)
     sim.do_animation(save=False)
