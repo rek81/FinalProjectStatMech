@@ -212,15 +212,16 @@ class Simulation:
                             tlist = []
                             vlist = []
                             for v in range(1, len(particle1MasterList[i])):
-                                vel = abs(particle1MasterList[i][v][0]-particle1MasterList[i][v-1][0])
+                                vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
                                 time = (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
                                 vlist.append(vel)
                                 tlist.append(time)
-                                
+                   
+                                print (vlist)
                                 avgT = sum(tlist)/len(tlist)
                                 avgV = sum(vlist)/len(vlist)
-                                vt = avgT*avgV
-                                partlist.append(vt)
+                            vt = avgT*avgV
+                            partlist.append(vt)
                         mean_free_path = (sum(partlist)/len(partlist))/2.
                         Tmfp = 1./(np.pi*(nparticles/(0.01**2)))
                         print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", Tmfp/0.0005)
@@ -314,7 +315,7 @@ class Simulation:
 
 
 if __name__ == '__main__':
-    nparticles = 1500
+    nparticles = 100
 #    radii = np.random.random(nparticles)*0.03+0.02
 #    radii = np.random.uniform(0.00085, 0.00095, nparticles)
     radii = np.random.uniform(0.000085, 0.000095, nparticles)
