@@ -227,8 +227,8 @@ class Simulation:
                             tlist.append(time)
                             
                             print (vlist)
-                            avgT = sum(tlist)/len(tlist)
-                            avgV = sum(vlist)/len(vlist)
+                        avgT = sum(tlist)/len(tlist)
+                        avgV = sum(vlist)/len(vlist)
                         vt = avgT*avgV
                         partlist.append(vt)
                     mean_free_path = (sum(partlist)/len(partlist))/2.
@@ -324,7 +324,7 @@ class Simulation:
 
 
 if __name__ == '__main__':
-    nparticles = 100
+    nparticles = 200
 #    radii = np.random.random(nparticles)*0.03+0.02
 #    radii = np.random.uniform(0.00085, 0.00095, nparticles)
     radii = np.random.uniform(0.000085, 0.000095, nparticles)
