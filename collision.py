@@ -193,27 +193,30 @@ class Simulation:
         vt1 = []
         vt2 = []
         global collisioncount
-        for i,j in pairs:
-            if self.particles[i].overlaps(self.particles[j]):
-                v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j])
+        for i,j in pairs: 
+            if self.particles[i].overlaps(self.particles[j]):  
+                if collisioncount < (nparticles*5)+1:
+                    print (collisioncount)
+
+                v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j]) 
                 if len(particle1MasterList[i]) <= 5.:
 
                     vt1 = [v1, t1]
                     particle1MasterList[i].append(vt1)
 
                     collisioncount += 1
-#                    if collisioncount < (nparticles*5)+1:
-                        
-#                        print (collisioncount)
+
                 if len(particle1MasterList[j]) <= 5.:
+
+                        
+
 
                     vt1 = [v1, t1]
                     particle1MasterList[j].append(vt1)
+                    collisioncount += 1                    
 
-                    collisioncount += 1
-                    if collisioncount < (nparticles*5)+1:
-                        print (collisioncount)
 
+                        
                 if collisioncount == 5*nparticles:
                     partlist = []
 
@@ -226,11 +229,11 @@ class Simulation:
                             vlist.append(vel)
                             tlist.append(time)
 #                            print (len(tlist))
-                            
-                            avgT = sum(tlist)/len(tlist)
-                            avgV = sum(vlist)/len(vlist)
-                            vt = avgT*avgV
-                            partlist.append(vt)
+                        print ("this is particle number ", i, " and the length of t list for this particle is ", len(tlist))
+                        avgT = sum(tlist)/len(tlist)
+                        avgV = sum(vlist)/len(vlist)
+                        vt = avgT*avgV
+                        partlist.append(vt)
 #                            print (partlist)
                     print (len(partlist))
                     mean_free_path = (sum(partlist)/len(partlist))/2.
