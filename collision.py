@@ -25,7 +25,8 @@ class Particle:
         self.v = np.array((vx, vy))
         self.radius = radius
         self.mass = self.radius**2
-        dt = 0.01
+        dt = 0.001
+        self.t = 0.
         self.styles = styles
         if not self.styles:
             # Default circle styles
@@ -57,6 +58,8 @@ class Particle:
     @vy.setter
     def vy(self, value):
         self.v[1] = value
+    def t(self, value):
+        return self.t
 
     def overlaps(self, other):
         """Does the circle of this Particle overlap that of other?"""
@@ -74,11 +77,16 @@ class Particle:
         """Advance the Particle's position forward in time by dt."""
 
         self.r += self.v * dt
-    def record_t(self, dt): # save dt and append to new variable t
-        global t
-        t += dt
-#        print (t)
-        return t
+
+#    def record_t(self, dt): # save dt and append to new variable t
+    def record_t(self): # save dt and append to new variable t
+        ##### this was adding dt to every particle at any collision, not just the one particles. Must define as self. currently broken
+#        global t
+#        self.t = 0.
+        self.t = np.sqrt(self.r[0]**2+self.r[1]**2)/np.sqrt(self.v[0]**2+self.v[1]**2)
+#        return t
+#        self.t += dt
+        return self.t
 
 class Simulation:
     """A class for a simple hard-circle molecular dynamics simulation.
@@ -106,6 +114,12 @@ class Simulation:
         for c in range(n):
             particle1MasterList[c]=[]
             particle2MasterList[c]=[]
+            
+    def countPerPart(self, dic):
+        for i in dic.keys():
+            if len(dic[i]) != 5:
+                return False
+        return True
 
     def place_particle(self, rad, styles):
         # Choose x, y so that the Particle is entirely inside the
@@ -113,7 +127,6 @@ class Simulation:
         x, y = rad + (L - 2*rad) * np.random.random(2)
         # Choose a random velocity (within some reasonable range of
         # values) for the Particle.
-#        vr = 0.1 * np.sqrt(np.random.random()) + 0.05
         vr = 0.1 * np.sqrt(np.random.uniform(0.05, 0.055)) + .1
         vphi = 2*np.pi * np.random.random()
         vx, vy = vr * np.cos(vphi), vr * np.sin(vphi)
@@ -170,10 +183,10 @@ class Simulation:
         u2 = v2 - 2*m1 / M * np.dot(v2-v1, r2-r1) / d * (r2 - r1)
         p1.v = u1
         p2.v = u2
-        t1 = p1.record_t(0.01)
-        t2 = p2.record_t(0.01)
         vel1 = np.sqrt(p1.v[0]**2+p1.v[1]**2)
         vel2 = np.sqrt(p2.v[0]**2+p2.v[1]**2)
+        t1 = np.sqrt(p1.r[0]**2+p1.r[1]**2)/vel1
+        t2 = np.sqrt(p2.r[0]**2+p2.r[1]**2)/vel2
         return (vel1, vel2, t1, t2) 
 
     def handle_collisions(self):
@@ -183,6 +196,7 @@ class Simulation:
         change such that both energy and momentum are conserved.
 
         """ 
+        
 
         # We're going to need a sequence of all of the pairs of particles when
         # we are detecting collisions. combinations generates pairs of indexes
@@ -195,29 +209,28 @@ class Simulation:
         global collisioncount
         for i,j in pairs: 
             if self.particles[i].overlaps(self.particles[j]):  
-                if collisioncount < (nparticles*5)+1:
-                    print (collisioncount)
+#                if collisioncount < (nparticles*5)+1:
+                    
+ #                   print ("collision count is ", collisioncount, " particle i length is ", len(particle1MasterList[i]), " and particle j count is ", len(particle1MasterList[j]))
 
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j]) 
-                if len(particle1MasterList[i]) <= 5.:
+#                v1, v2 = self.change_velocities(self.particles[i], self.particles[j]) 
+                if len(particle1MasterList[i]) < 5.:
 
                     vt1 = [v1, t1]
                     particle1MasterList[i].append(vt1)
 
                     collisioncount += 1
-
-                if len(particle1MasterList[j]) <= 5.:
-
-                        
-
+                    
+                    
+                if len(particle1MasterList[j]) < 5.:
 
                     vt1 = [v1, t1]
+                    print (vt1)
                     particle1MasterList[j].append(vt1)
                     collisioncount += 1                    
-
-
-                        
-                if collisioncount == 5*nparticles:
+                
+                if self.countPerPart(particle1MasterList):
                     partlist = []
 
                     for i in particle1MasterList.keys():
@@ -225,20 +238,20 @@ class Simulation:
                         vlist = []
                         for v in range(1, len(particle1MasterList[i])):
                             vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
-                            time = (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
+#                            time = abs((particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1]))
+                            time = (particle1MasterList[i][v][1])
+#                            print ("time is ", time, " and velocity is ", vel )
                             vlist.append(vel)
                             tlist.append(time)
-#                            print (len(tlist))
-                        print ("this is particle number ", i, " and the length of t list for this particle is ", len(tlist))
+#                            print ("this is particle number ", i, " and the length of t list for this particle is ", len(tlist))
                         avgT = sum(tlist)/len(tlist)
                         avgV = sum(vlist)/len(vlist)
                         vt = avgT*avgV
                         partlist.append(vt)
-#                            print (partlist)
-                    print (len(partlist))
+#                    print (len(partlist))
                     mean_free_path = (sum(partlist)/len(partlist))/2.
-                    Tmfp = 1./(np.pi*(nparticles/(0.01**2)))
-                    print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", Tmfp/0.0005)
+                    Tmfp = 1./(0.00009*np.pi*(nparticles/(0.01**2)))
+                    print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", mean_free_path/0.005)
                                 
         
     def handle_boundary_collisions(self, p):
