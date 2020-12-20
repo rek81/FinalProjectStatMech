@@ -202,29 +202,38 @@ class Simulation:
                     particle1MasterList[i].append(vt1)
 
                     collisioncount += 1
-                    if collisioncount < (nparticles*5)+1:
+#                    if collisioncount < (nparticles*5)+1:
                         
-                        print (collisioncount)
-                    if collisioncount == 5*nparticles:
-                        partlist = []
+#                        print (collisioncount)
+                if len(particle1MasterList[j]) <= 5.:
 
-                        for i in particle1MasterList.keys():
-                            tlist = []
-                            vlist = []
-                            for v in range(1, len(particle1MasterList[i])):
-                                vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
-                                time = (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
-                                vlist.append(vel)
-                                tlist.append(time)
-                   
-                                print (vlist)
-                                avgT = sum(tlist)/len(tlist)
-                                avgV = sum(vlist)/len(vlist)
-                            vt = avgT*avgV
-                            partlist.append(vt)
-                        mean_free_path = (sum(partlist)/len(partlist))/2.
-                        Tmfp = 1./(np.pi*(nparticles/(0.01**2)))
-                        print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", Tmfp/0.0005)
+                    vt1 = [v1, t1]
+                    particle1MasterList[j].append(vt1)
+
+                    collisioncount += 1
+                    if collisioncount < (nparticles*5)+1:
+                        print (collisioncount)
+
+                if collisioncount == 5*nparticles:
+                    partlist = []
+
+                    for i in particle1MasterList.keys():
+                        tlist = []
+                        vlist = []
+                        for v in range(1, len(particle1MasterList[i])):
+                            vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
+                            time = (particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1])
+                            vlist.append(vel)
+                            tlist.append(time)
+                            
+                            print (vlist)
+                            avgT = sum(tlist)/len(tlist)
+                            avgV = sum(vlist)/len(vlist)
+                        vt = avgT*avgV
+                        partlist.append(vt)
+                    mean_free_path = (sum(partlist)/len(partlist))/2.
+                    Tmfp = 1./(np.pi*(nparticles/(0.01**2)))
+                    print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", Tmfp/0.0005)
                                 
         
     def handle_boundary_collisions(self, p):
