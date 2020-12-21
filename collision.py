@@ -173,7 +173,6 @@ class Simulation:
         velocities.
 
         """
-        
         m1, m2 = p1.mass, p2.mass
         M = m1 + m2
         r1, r2 = p1.r, p2.r
@@ -185,9 +184,12 @@ class Simulation:
         p2.v = u2
         vel1 = np.sqrt(p1.v[0]**2+p1.v[1]**2)
         vel2 = np.sqrt(p2.v[0]**2+p2.v[1]**2)
-        t1 = np.sqrt(p1.r[0]**2+p1.r[1]**2)/vel1
-        t2 = np.sqrt(p2.r[0]**2+p2.r[1]**2)/vel2
-        return (vel1, vel2, t1, t2) 
+#        t1 = np.sqrt(p1.r[0]**2+p1.r[1]**2)/vel1
+#        t2 = np.sqrt(p2.r[0]**2+p2.r[1]**2)/vel2
+        pos1 = np.sqrt(p1.r[0]**2+p1.r[1]**2)
+        pos2 = np.sqrt(p2.r[0]**2+p2.r[1]**2)
+#        return (vel1, vel2, t1, t2) 
+        return (vel1, vel2, pos1, pos2) 
 
     def handle_collisions(self):
         """Detect and handle any collisions between the Particles.
@@ -226,7 +228,7 @@ class Simulation:
                 if len(particle1MasterList[j]) < 5.:
 
                     vt1 = [v1, t1]
-                    print (vt1)
+#                    print (vt1)
                     particle1MasterList[j].append(vt1)
                     collisioncount += 1                    
                 
@@ -238,12 +240,11 @@ class Simulation:
                         vlist = []
                         for v in range(1, len(particle1MasterList[i])):
                             vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
-#                            time = abs((particle1MasterList[i][v][1] - particle1MasterList[i][v-1][1]))
-                            time = (particle1MasterList[i][v][1])
-#                            print ("time is ", time, " and velocity is ", vel )
+                            print ("position for part i is ", particle1MasterList[i][v][1], " and position for i-1 is ", particle1MasterList[i][v-1][1])
+                            time = abs(((particle1MasterList[i][v][1]/particle1MasterList[i][v][0]) - (particle1MasterList[i][v-1][1]/particle1MasterList[i][v-1][0])))
+
                             vlist.append(vel)
                             tlist.append(time)
-#                            print ("this is particle number ", i, " and the length of t list for this particle is ", len(tlist))
                         avgT = sum(tlist)/len(tlist)
                         avgV = sum(vlist)/len(vlist)
                         vt = avgT*avgV
@@ -251,6 +252,7 @@ class Simulation:
 #                    print (len(partlist))
                     mean_free_path = (sum(partlist)/len(partlist))/2.
                     Tmfp = 1./(0.00009*np.pi*(nparticles/(0.01**2)))
+#                    Tmfp = 1./(nparticles/(0.01**2))
                     print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", mean_free_path/0.005)
                                 
         
@@ -342,7 +344,7 @@ class Simulation:
 
 
 if __name__ == '__main__':
-    nparticles = 200
+    nparticles = 50
 #    radii = np.random.random(nparticles)*0.03+0.02
 #    radii = np.random.uniform(0.00085, 0.00095, nparticles)
     radii = np.random.uniform(0.000085, 0.000095, nparticles)
