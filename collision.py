@@ -4,11 +4,9 @@ from matplotlib.patches import Circle
 from matplotlib import animation
 from itertools import combinations
 import collections
-#t = 0.
 L = .01
-particle1MasterList = {}
-particle2MasterList = {}
-collisioncount = 0
+particle1MasterList = {} # creates dictionary of all particles to hold each particles collision information (velocity and position at collision)
+particle2MasterList = {} # dicitonary for second particle in collision
 
 class Particle:
     """A class representing a two-dimensional particle."""
@@ -25,8 +23,6 @@ class Particle:
         self.v = np.array((vx, vy))
         self.radius = radius
         self.mass = self.radius**2
-#        dt = 0.001
-#        self.t = 0.
         self.styles = styles
         if not self.styles:
             # Default circle styles
@@ -58,8 +54,6 @@ class Particle:
     @vy.setter
     def vy(self, value):
         self.v[1] = value
-    def t(self, value):
-        return self.t
 
     def overlaps(self, other):
         """Does the circle of this Particle overlap that of other?"""
@@ -78,15 +72,6 @@ class Particle:
 
         self.r += self.v * dt
 
-#    def record_t(self, dt): # save dt and append to new variable t
-    def record_t(self): # save dt and append to new variable t
-        ##### this was adding dt to every particle at any collision, not just the one particles. Must define as self. currently broken
-#        global t
-#        self.t = 0.
-        self.t = np.sqrt(self.r[0]**2+self.r[1]**2)/np.sqrt(self.v[0]**2+self.v[1]**2)
-#        return t
-#        self.t += dt
-        return self.t
 
 class Simulation:
     """A class for a simple hard-circle molecular dynamics simulation.
@@ -182,13 +167,11 @@ class Simulation:
         u2 = v2 - 2*m1 / M * np.dot(v2-v1, r2-r1) / d * (r2 - r1)
         p1.v = u1
         p2.v = u2
-        vel1 = np.sqrt(p1.v[0]**2+p1.v[1]**2)
-        vel2 = np.sqrt(p2.v[0]**2+p2.v[1]**2)
-#        t1 = np.sqrt(p1.r[0]**2+p1.r[1]**2)/vel1
-#        t2 = np.sqrt(p2.r[0]**2+p2.r[1]**2)/vel2
+        vel1 = np.sqrt(u1[0]**2+u1[1]**2)
+        vel2 = np.sqrt(u2[0]**2+u2[1]**2)
         pos1 = np.sqrt(p1.r[0]**2+p1.r[1]**2)
         pos2 = np.sqrt(p2.r[0]**2+p2.r[1]**2)
-#        return (vel1, vel2, t1, t2) 
+
         return (vel1, vel2, pos1, pos2) 
 
     def handle_collisions(self):
@@ -208,26 +191,21 @@ class Simulation:
         pairs = combinations(range(self.n), 2)
         vt1 = []
         vt2 = []
-        global collisioncount
         for i,j in pairs: 
             if self.particles[i].overlaps(self.particles[j]):  
 
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j]) 
-#                v1, v2 = self.change_velocities(self.particles[i], self.particles[j]) 
-                if len(particle1MasterList[i]) < 5.:
+                if len(particle1MasterList[i]) < 5.: # save information to calculate on when each particle has five collisions 
 
                     vt1 = [v1, t1]
-                    particle1MasterList[i].append(vt1)
+                    particle1MasterList[i].append(vt1) # append each particle's velocity and position to dictionary 
 
-                    collisioncount += 1
-                    
                     
                 if len(particle1MasterList[j]) < 5.:
 
-                    vt1 = [v1, t1]
-#                    print (vt1)
+                    vt1 = [v2, t2]
+
                     particle1MasterList[j].append(vt1)
-                    collisioncount += 1                    
                 
                 if self.countPerPart(particle1MasterList):
                     partlist = []
@@ -236,21 +214,12 @@ class Simulation:
                         tlist = []
                         vlist = []
                         for v in range(1, len(particle1MasterList[i])):
-                            vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
-#                            print ("position diff between collisions ", particle1MasterList[i][v][1]- particle1MasterList[i][v-1][1])
-                            print ("for particle ", i, "position col1 collisions ", particle1MasterList[i][v][1], " and position col2 is ", particle1MasterList[i][v-1][1])
-                            time = abs((((particle1MasterList[i][v][1]-0.00018)/particle1MasterList[i][v][0]) - ((particle1MasterList[i][v-1][1]-0.00018)/particle1MasterList[i][v-1][0])))
+                            position = abs((particle1MasterList[i][v][1]) - (particle1MasterList[i][v-1][1])) # calculates difference in position of ith' collision and ith-1 collision
 
-                            vlist.append(vel)
-                            tlist.append(time)
+                            tlist.append(position)
                         avgT = sum(tlist)/len(tlist)
-                        avgV = sum(vlist)/len(vlist)
-                        vt = avgT*avgV
-                        partlist.append(vt)
-#                    print (len(partlist))
-                    mean_free_path = (sum(partlist)/len(partlist))/2.
-                    Tmfp = 1./(0.00009*np.pi*(nparticles/(0.01**2)))
-#                    Tmfp = 1./(nparticles/(0.01**2))
+                    mean_free_path = (sum(tlist)/len(tlist)) # average of difference in position between collisions: mean free path!
+                    Tmfp = 1./(0.00009*np.pi*(nparticles/(0.01**2))) # mean free path theoretcial: 1/(density*pi*radius), scaled to circumfrence of particle 
                     print ("this is mean free path ", mean_free_path, " and theory mean free path is ", Tmfp, ". Kn is ", mean_free_path/0.005)
                                 
         
