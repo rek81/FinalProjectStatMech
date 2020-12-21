@@ -24,23 +24,29 @@ def fit(x, a, b, c):
 popt, _ = curve_fit(fit, boxL, Kn)
 
 a, b, c = popt
-print a
-print b
-print c
+#print a
+#print b
+#print c
 
 xvals = np.linspace(int(boxL[0]), int(boxL[-1]), 200)
 
-print xvals
+#print xvals
 yvals = []
 for x in xvals:
-    y = -b*np.exp(x) + 0.8
-    print y
+    y = -b*np.log(x) + 13.2
+#    print y
     yvals.append(y)
 
-plt.plot(boxL, Kn, color='black')
-plt.plot(xvals, yvals, color='red')
-plt.xlabel('Number Density)')
-plt.ylabel('Kn')
-plt.yscale('log')
-plt.xscale('log')
+
+xvals = np.log(xvals)
+Kn = np.log(Kn)
+boxL = np.log(boxL)
+
+
+
+plt.plot(boxL, Kn, "o", color='black', label = 'data')
+plt.plot(xvals, yvals, color='red', label = 'fit')
+plt.xlabel('ln(Number Density)')
+plt.ylabel('ln(Kn)')
+plt.legend(loc='upper right')
 plt.show()
