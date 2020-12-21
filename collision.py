@@ -4,7 +4,7 @@ from matplotlib.patches import Circle
 from matplotlib import animation
 from itertools import combinations
 import collections
-t = 0.
+#t = 0.
 L = .01
 particle1MasterList = {}
 particle2MasterList = {}
@@ -25,8 +25,8 @@ class Particle:
         self.v = np.array((vx, vy))
         self.radius = radius
         self.mass = self.radius**2
-        dt = 0.001
-        self.t = 0.
+#        dt = 0.001
+#        self.t = 0.
         self.styles = styles
         if not self.styles:
             # Default circle styles
@@ -211,9 +211,6 @@ class Simulation:
         global collisioncount
         for i,j in pairs: 
             if self.particles[i].overlaps(self.particles[j]):  
-#                if collisioncount < (nparticles*5)+1:
-                    
- #                   print ("collision count is ", collisioncount, " particle i length is ", len(particle1MasterList[i]), " and particle j count is ", len(particle1MasterList[j]))
 
                 v1, v2, t1, t2 = self.change_velocities(self.particles[i], self.particles[j]) 
 #                v1, v2 = self.change_velocities(self.particles[i], self.particles[j]) 
@@ -240,8 +237,9 @@ class Simulation:
                         vlist = []
                         for v in range(1, len(particle1MasterList[i])):
                             vel = abs(particle1MasterList[i][v][0] - particle1MasterList[i][v-1][0])
-                            print ("position for part i is ", particle1MasterList[i][v][1], " and position for i-1 is ", particle1MasterList[i][v-1][1])
-                            time = abs(((particle1MasterList[i][v][1]/particle1MasterList[i][v][0]) - (particle1MasterList[i][v-1][1]/particle1MasterList[i][v-1][0])))
+#                            print ("position diff between collisions ", particle1MasterList[i][v][1]- particle1MasterList[i][v-1][1])
+                            print ("for particle ", i, "position col1 collisions ", particle1MasterList[i][v][1], " and position col2 is ", particle1MasterList[i][v-1][1])
+                            time = abs((((particle1MasterList[i][v][1]-0.00018)/particle1MasterList[i][v][0]) - ((particle1MasterList[i][v-1][1]-0.00018)/particle1MasterList[i][v-1][0])))
 
                             vlist.append(vel)
                             tlist.append(time)
@@ -326,7 +324,7 @@ class Simulation:
     def save_or_show_animation(self, anim, save, filename='collision.mp4'):
         if save:
             Writer = animation.writers['ffmpeg']
-            writer = Writer(fps=10, bitrate=1800)
+            writer = Writer(fps=60, bitrate=1800)
             anim.save(filename, writer=writer)
         else:
             plt.show()
@@ -344,7 +342,7 @@ class Simulation:
 
 
 if __name__ == '__main__':
-    nparticles = 50
+    nparticles = 1500
 #    radii = np.random.random(nparticles)*0.03+0.02
 #    radii = np.random.uniform(0.00085, 0.00095, nparticles)
     radii = np.random.uniform(0.000085, 0.000095, nparticles)
